@@ -41,7 +41,7 @@ void *requestOffload(int sockID, int complexity){
         //get file information
         char file[14];
         char data[1024];
-        char instruction[3];
+        char instruction[4];
         //random file
         int randomFile = rand() % 10;
         snprintf(file,14, "Videos/Video%d", randomFile);
@@ -55,6 +55,7 @@ void *requestOffload(int sockID, int complexity){
         printf("Random file %d descriptor sent\n", randomFile);
         read(sockID, instruction, 3);
         printf("Permission received: %s\n", instruction);
+        instruction[3]= '\0';
         if(strcmp(instruction,"yes") == 0){
             doOffload(sockID, randomFile);
         }
