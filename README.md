@@ -1,5 +1,6 @@
 # IOTResearch
 An demo of the minimizationc of power comsumption of IoT edge devices inspired by DREAM architecture.
+
 Important:
 Videos folder under client has  10 videos, and they are huge. You do not have to download it. Just download the rest, create a Videos folder in client, and run createFiles.exe
 
