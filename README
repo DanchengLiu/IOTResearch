@@ -1,0 +1,10 @@
+An demo of the minimizationc of power comsumption of IoT edge devices inspired by DREAM architecture. Update: A draft of ED protocol is written with asusmption of > O(n) tasks.
+Current Version: v1.0:
+1. Handles one server with multiple clients correctly.
+2. Server does a fake process by sleep and reducing work time.
+3. Client local workload is not implemented yet, but correctly communicates with
+server using socket.
+TODO:
+1. Implement client local workload. Should be just a minute of work.
+2. Important: Sleep might not do well when client has huge workload.
+Potential fix is switching to posix timer.
