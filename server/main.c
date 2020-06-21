@@ -98,6 +98,15 @@ int main(int argc , char *argv[])
 
     while(TRUE)   
     {   
+                    if(current_work_time > 0.5 ){
+
+                        // so this is supposed to be a thread thing where
+                        // it executes the offloaded stuff, but since we are not
+                        // measuring the energy, just sleep and 
+                        // decrease the number
+                        sleep(0.5);
+                        current_work_time -=0.5;
+                    }
         //clear the socket set  
         FD_ZERO(&readfds);   
      
@@ -196,15 +205,6 @@ int main(int argc , char *argv[])
                 }   
                 */
                 else{
-                    if(current_work_time > 0.5 ){
-
-                        // so this is supposed to be a thread thing where
-                        // it executes the offloaded stuff, but since we are not
-                        // measuring the energy, just sleep and 
-                        // decrease the number
-                        sleep(0.5);
-                        current_work_time -=0.5;
-                    }
                     int complexity = atoi(strtok(buffer, ","));
                     unsigned int size = (unsigned int)atoi(strtok(NULL, ","));
                     double delay = atof(strtok(NULL, ","));

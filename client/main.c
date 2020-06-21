@@ -15,16 +15,42 @@
 #include <fcntl.h> // for open
 #include <unistd.h> // for close
 
-
-void doOffload( int sockID, int fileID ){
+// two methods both using Galaxy Node (LTE)
+// return the energy for offloading file
+double doOffload( int sockID, int fileID ){
     // not yet sure if we actually want anything in here
     // offloading technique is unknown yet
-    printf("Offload\n");
+    printf("Offloading:...\n");
+
+
+
+    char file[14];
+    snprintf(file,14, "Videos/Video%d", fileID);
+    struct stat st;
+    stat(file, &st);
+    int sizeOfFile = st.st_size;
+    double energy = 0.0;
+    // offload at 1M per second
+    energy = 1224.78*((double)sizeOfFile)/3000000; //3M is stated in paper
+    return energy;
+
 }
 
-void doLocal( int fileID ){
+// return the energy for local processing file
+double doLocal( int fileID ){
     // not implemented yet
-    printf("DO it local\n");
+    printf("DO it local:...\n");
+    char file[14];
+    snprintf(file,14, "Videos/Video%d", fileID);
+
+
+    struct stat st;
+    stat(file, &st);
+    int sizeOfFile = st.st_size;
+    double energy = 0.0;
+    double estimateFreq = 3200.0*((double)sizeOfFile)/10.0;
+    energy = 1000.0/*10.0*(0.33*estimateFreq*estimateFreq*estimateFreq+0.1)*/;
+    return energy;
 }
 
 
@@ -34,6 +60,7 @@ void doLocal( int fileID ){
 //assume every quest has greater than O(n) complexity
 //try to offload every task
 void *requestOffload(int sockID, int complexity){
+    double energy = 0.0;
     while(true){
         // I am thinking about switching this to a posix timer if this does not         // work as expected.
         sleep(10);
@@ -49,6 +76,13 @@ void *requestOffload(int sockID, int complexity){
         struct stat st;
         stat(file, &st);
         int sizeOfFile = st.st_size;
+        
+        double estimateFreq = ((double)sizeOfFile)*8/10.0/1000000.0;
+        if(estimateFreq < 1){ // threshold 1M from 1000 cycles/bit
+            energy +=doLocal(randomFile);
+            printf("Do not meet threshold\nEnergy cost by far is: %f\n\n", energy);
+            continue;
+        }
 
         snprintf(data,1024,"%d,%d,10", complexity, sizeOfFile);
         send(sockID, data, 1024, 0);
@@ -57,10 +91,12 @@ void *requestOffload(int sockID, int complexity){
         printf("Permission received: %s\n", instruction);
         instruction[3]= '\0';
         if(strcmp(instruction,"yes") == 0){
-            doOffload(sockID, randomFile);
+            energy +=doOffload(sockID, randomFile);
+            printf("Energy cost by far is: %f\n\n", energy);
         }
         else{
-            doLocal(randomFile);
+            energy +=doLocal(randomFile);
+            printf("Energy cost by far is: %f\n\n", energy);
         }
     }
 }
