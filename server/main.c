@@ -213,8 +213,8 @@ int main(int argc , char *argv[])
                     newQuest.complexity = complexity;
                     newQuest.size = size;
                     newQuest.max_delay = delay;
-                    double estimateTime = ((double)(size*size))/500000000.0;
-                    //500M
+                    double estimateTime = ((double)(size*size))/1000000000.0;
+                    //1000M
                     printf("Estimate time for the task is: %f\n",estimateTime);
                     // this needs actual data to support
                     if(delay > (estimateTime+current_work_time)){

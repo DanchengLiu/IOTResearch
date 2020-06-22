@@ -1,5 +1,6 @@
 // Client side
 #include <stdio.h> 
+#include <math.h>
 #include <stdlib.h>
 #include <sys/socket.h> 
 #include <arpa/inet.h> 
@@ -14,6 +15,13 @@
 #include <netinet/in.h>
 #include <fcntl.h> // for open
 #include <unistd.h> // for close
+
+#define A 0.000000000015917
+#define B 0.000000861733
+#define C 0.07
+#define D 0
+#define TC 330
+#define PD 6400 //per byte 800*8
 
 // two methods both using Galaxy Node (LTE)
 // return the energy for offloading file
@@ -31,7 +39,7 @@ double doOffload( int sockID, int fileID ){
     int sizeOfFile = st.st_size;
     double energy = 0.0;
     // offload at 1M per second
-    energy = 1224.78*((double)sizeOfFile)/3000000; //3M is stated in paper
+    energy = (0.064+(3000000*0.4813)/1000000)*((double)sizeOfFile)/3000000; //3M is stated in paper
     return energy;
 
 }
@@ -48,8 +56,12 @@ double doLocal( int fileID ){
     stat(file, &st);
     int sizeOfFile = st.st_size;
     double energy = 0.0;
-    double estimateFreq = 3200.0*((double)sizeOfFile)/10.0;
-    energy = 1000.0/*10.0*(0.33*estimateFreq*estimateFreq*estimateFreq+0.1)*/;
+    double estimateFreq = ((double)sizeOfFile)/10.0;
+    //(Mcycles in M)^2/J=1.7M
+    // J = (Mcylces in M)^/1.7M
+    double Pd = A*((estimateFreq*PD+188770000)/515200000)*((estimateFreq*PD+188770000)/515200000)*estimateFreq*PD;
+    double Ps = ((estimateFreq*PD+188770000)/515200000)*(B*TC*TC*exp(C/TC)+D);
+    energy = 10*(Pd+Ps)/*10.0*(0.33*estimateFreq*estimateFreq*estimateFreq+0.1)*/;
     return energy;
 }
 
@@ -78,9 +90,9 @@ void *requestOffload(int sockID, int complexity){
         int sizeOfFile = st.st_size;
         
         double estimateFreq = ((double)sizeOfFile)*8/10.0/1000000.0;
-        if(estimateFreq < 1){ // threshold 1M from 1000 cycles/bit
+        if(estimateFreq < 2){ // threshold 2M from 800 cycles/bit
             energy +=doLocal(randomFile);
-            printf("Do not meet threshold\nEnergy cost by far is: %f\n\n", energy);
+            printf("File %d does not meet threshold\nEnergy cost by far is: %fJ\n\n", randomFile, energy);
             continue;
         }
 
@@ -92,11 +104,11 @@ void *requestOffload(int sockID, int complexity){
         instruction[3]= '\0';
         if(strcmp(instruction,"yes") == 0){
             energy +=doOffload(sockID, randomFile);
-            printf("Energy cost by far is: %f\n\n", energy);
+            printf("Energy cost by far is: %fJ\n\n", energy);
         }
         else{
             energy +=doLocal(randomFile);
-            printf("Energy cost by far is: %f\n\n", energy);
+            printf("Energy cost by far is: %fJ\n\n", energy);
         }
     }
 }
