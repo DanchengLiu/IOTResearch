@@ -11,3 +11,9 @@ Version 1.0
 TODO:
 1. Implement actual workload for client. (Using nested for loops)
 2. If step 1 causes bugs on sleep in thread, switching to posix timer.
+
+Version1.1
+1. Add energy simulation and report based on 800 cycles/bit density.
+2. Update the energy calculation formula.
+TODO:
+1. Figure out the exact threshold for offloading startline, but 2M/s is a pretty good estimate.
